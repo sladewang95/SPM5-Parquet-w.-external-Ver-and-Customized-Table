@@ -1,0 +1,101 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<NameSpacePrefix>Utah.Udot</NameSpacePrefix>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<RootNamespace>$(NameSpacePrefix).Atspm</RootNamespace>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+		<AssemblyName>$(NameSpacePrefix).Atspm</AssemblyName>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<Title>Udot Automated Traffic Performance Measure Infrastructure</Title>
+		<Authors>utah.udot.gov</Authors>
+		<Description>Library that defines implementation and infrastructure for the Automated Traffic Performance Measures platform</Description>
+		<Copyright>Copyright $(Authors)</Copyright>
+		<PackageProjectUrl>https://github.com/OpenSourceTransportation/Atspm</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/OpenSourceTransportation/Atspm</RepositoryUrl>
+		<PackageTags>C#; .net standard; .net core</PackageTags>
+		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+		<Version>5.1.3</Version>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Compile Remove="Analysis\PhaseTerminationAnalysis.cs" />
+		<Compile Remove="Analysis\WorkflowFilters\FilteredCallStatus.cs" />
+		<Compile Remove="Analysis\WorkflowFilters\FilteredIndicationData.cs" />
+		<Compile Remove="Analysis\WorkflowFilters\FilteredSplitsData.cs" />
+		<Compile Remove="Analysis\WorkflowFilters\FilteredTerminationStatus.cs" />
+		<Compile Remove="Analysis\WorkflowFilters\FilteredTimingActuationData.cs" />
+		<Compile Remove="Analysis\WorkflowFilters\FilterTspPriorityData.cs" />
+		<Compile Remove="Analysis\Workflows\ApproachDelayWorkflow.cs" />
+		<Compile Remove="Analysis\Workflows\ApproachVolumeWorkflow.cs" />
+		<Compile Remove="Analysis\Workflows\PhaseTerminationWorkflow.cs" />
+		<Compile Remove="Analysis\Workflows\PurdueCoordinationWorkflow.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="System.Linq.Async" Version="6.0.1" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Data\Data.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Folder Include="Analysis\ArrivalsOnRed\" />
+		<Folder Include="Analysis\LeftTurnGap\" />
+		<Folder Include="Analysis\ApproachSpeed\" />
+		<Folder Include="Analysis\PhaseTermination\" />
+		<Folder Include="Analysis\TimingAndActuation\" />
+		<Folder Include="Analysis\PurdueSplitFailure\" />
+		<Folder Include="Analysis\YellowAndRedActuations\" />
+		<Folder Include="Analysis\TurningMovemen\" />
+		<Folder Include="Analysis\WaitTime\" />
+		<Folder Include="Analysis\SplitMonitor\" />
+		<Folder Include="Attributes\" />
+		<Folder Include="Events\" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="Analysis\PhaseTerminationAnalysis.cs" />
+		<None Include="Analysis\WorkflowFilters\FilteredCallStatus.cs" />
+		<None Include="Analysis\WorkflowFilters\FilteredIndicationData.cs" />
+		<None Include="Analysis\WorkflowFilters\FilteredSplitsData.cs" />
+		<None Include="Analysis\WorkflowFilters\FilteredTerminationStatus.cs" />
+		<None Include="Analysis\WorkflowFilters\FilteredTimingActuationData.cs" />
+		<None Include="Analysis\WorkflowFilters\FilterTspPriorityData.cs" />
+		<None Include="Analysis\Workflows\ApproachDelayWorkflow.cs" />
+		<None Include="Analysis\Workflows\ApproachVolumeWorkflow.cs" />
+		<None Include="Analysis\Workflows\PhaseTerminationWorkflow.cs" />
+		<None Include="Analysis\Workflows\PurdueCoordinationWorkflow.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Using Include="Utah.Udot.Atspm.Analysis.WorkflowSteps" />
+	  <Using Include="Utah.Udot.Atspm.Analysis.Common" />
+	  <Using Include="Utah.Udot.Atspm.Analysis.WorkflowFilters" />
+	  <Using Include="Utah.Udot.Atspm.Data.Models" />
+	  <Using Include="Utah.Udot.Atspm.Enums" />
+	  <Using Include="Utah.Udot.NetStandardToolkit.Common" />
+	  <Using Include="Utah.Udot.NetStandardToolkit.Interfaces" />
+	  <Using Include="Utah.Udot.NetStandardToolkit.Workflows" />
+	  <Using Include="Utah.Udot.Atspm.Data.Models.MeasureOptions" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Update="README.md">
+	    <Pack>True</Pack>
+	    <PackagePath>\</PackagePath>
+	  </None>
+	</ItemGroup>
+
+</Project>

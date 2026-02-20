@@ -1,0 +1,235 @@
+
+
+x-environment: &default-environment
+  ASPNETCORE_ENVIRONMENT: "Production"
+  ASPNETCORE_Kestrel__Certificates__Default__Password: "password"
+  ASPNETCORE_Kestrel__Certificates__Default__Path: "/root/.aspnet/https/aspnetapp.pfx"
+  ASPNETCORE_URLS: "https://+:5000"
+
+  # Allowed Hosts
+  AllowedHosts: "${ALLOWED_HOSTS}"
+
+  # Database Connection Strings (Using Double Underscore Format)
+  ConnectionStrings__ConfigContext__ConnectionString: "${CONFIG_CONNECTION}"
+  ConnectionStrings__AggregationContext__ConnectionString: "${AGGREGATION_CONNECTION}"
+  ConnectionStrings__EventLogContext__ConnectionString: "${EVENTLOG_CONNECTION}"
+  ConnectionStrings__IdentityContext__ConnectionString: "${IDENTITY_CONNECTION}"
+
+  # Database Providers
+  ConnectionStrings__ConfigContext__Provider: "${ConfigContext_Provider}"
+  ConnectionStrings__AggregationContext__Provider: "${AggregationContext_Provider}"
+  ConnectionStrings__EventLogContext__Provider: "${EventLogContext_Provider}"
+  ConnectionStrings__IdentityContext__Provider: "${IdentityContext_Provider}"
+
+  # JWT Configuration
+  Jwt__ExpireDays: "${JWT_EXPIRE_DAYS}"
+  Jwt__Key: "${JWT_KEY}"
+  Jwt__Issuer: "${JWT_ISSUER}"
+
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: "${POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      retries: 5
+
+  database-installer:
+    build:
+      context: .
+      dockerfile: DatabaseInstaller/Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      <<: *default-environment
+      ADMIN_EMAIL: "${ADMIN_EMAIL}"
+      ADMIN_ROLE: "${ADMIN_ROLE}"
+      ADMIN_PASSWORD: "${ADMIN_PASSWORD}"
+      SEED_ADMIN: "${SEED_ADMIN}"
+    entrypoint: >
+      dotnet DatabaseInstaller.dll update
+      --config-connection "${CONFIG_CONNECTION}"
+      --aggregation-connection "${AGGREGATION_CONNECTION}"
+      --eventlog-connection "${EVENTLOG_CONNECTION}"
+      --identity-connection "${IDENTITY_CONNECTION}"
+      --provider "PostgreSQL"
+      --admin-email "${ADMIN_EMAIL}"
+      --admin-role "${ADMIN_ROLE}"
+      --admin-password "${ADMIN_PASSWORD}"
+      --seed-admin "${SEED_ADMIN}"
+
+  configapi:
+    build:
+      context: .
+      dockerfile: ConfigApi/Dockerfile
+    ports:
+      - "44400:5000"
+    environment:
+      <<: *default-environment
+      ASPNETCORE_URLS: "https://+:5000"
+    volumes:
+      - ${CERT_LOCATION}
+    user: root
+    depends_on:
+      database-installer:
+        condition: service_completed_successfully
+
+  dataapi:
+    build:
+      context: .
+      dockerfile: DataApi/Dockerfile
+    ports:
+      - "44401:5001"
+    environment:
+      <<: *default-environment
+      ASPNETCORE_URLS: "https://+:5001"
+    volumes:
+      - ${CERT_LOCATION}
+    depends_on:
+      database-installer:
+        condition: service_completed_successfully
+
+  reportapi:
+    build:
+      context: .
+      dockerfile: ReportApi/Dockerfile
+    ports:
+      - "44402:5002"
+    environment:
+      <<: *default-environment
+      ASPNETCORE_URLS: "https://+:5002"
+    volumes:
+      - ${CERT_LOCATION}
+    depends_on:
+      database-installer:
+        condition: service_completed_successfully
+
+  identityapi:
+    build:
+      context: .
+      dockerfile: IdentityApi/Dockerfile
+    ports:
+      - "44403:5003"
+    environment:
+      <<: *default-environment
+      ASPNETCORE_URLS: "https://+:5003"
+
+      EmailConfiguration__SmtpEmailService__Host: "${EmailConfiguration__Host}"
+      EmailConfiguration__SmtpEmailService__Port: "${EmailConfiguration__Port}"
+      EmailConfiguration__SmtpEmailService__UserName: "${EmailConfiguration__UserName}"
+      EmailConfiguration__SmtpEmailService__Password: "${EmailConfiguration__Password}"
+      EmailConfiguration__SmtpEmailService__EnableSsl: "${EmailConfiguration__EnableSsl}"
+    volumes:      
+      - ${CERT_LOCATION}
+    depends_on:
+      database-installer:
+        condition: service_completed_successfully
+  
+  webui:
+    build:
+      context: ./WebUI
+      dockerfile: Dockerfile
+    container_name: webui
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend-env.txt:/app/Configuration/frontend-env/frontend-env.txt:ro
+    depends_on:
+      configapi:
+        condition: service_started
+      identityapi:
+        condition: service_started
+      reportapi:
+        condition: service_started
+      dataapi:
+        condition: service_started
+  
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "3443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/certs:/etc/nginx/certs:ro
+    depends_on:
+      webui:
+        condition: service_started
+      configapi:
+        condition: service_started
+      identityapi:
+        condition: service_started
+      reportapi:
+        condition: service_started
+      dataapi:
+        condition: service_started
+
+  watchdog:
+    build:
+      context: .
+      dockerfile: WatchDog/Dockerfile
+    environment:
+      <<: *default-environment
+
+      EmailConfiguration__SmtpEmailService__Host: "${EmailConfiguration__Host}"
+      EmailConfiguration__SmtpEmailService__Port: "${EmailConfiguration__Port}"
+      EmailConfiguration__SmtpEmailService__UserName: "${EmailConfiguration__UserName}"
+      EmailConfiguration__SmtpEmailService__Password: "${EmailConfiguration__Password}"
+      EmailConfiguration__SmtpEmailService__EnableSsl: "${EmailConfiguration__EnableSsl}"
+      WatchdogConfiguration__ScanDate: "${WatchdogConfiguration__ScanDate}"
+      WatchdogConfiguration__ConsecutiveCount: "${WatchdogConfiguration__ConsecutiveCount}"
+      WatchdogConfiguration__LowHitThreshold: "${WatchdogConfiguration__LowHitThreshold}"
+      WatchdogConfiguration__MaximumPedestrianEvents: "${WatchdogConfiguration__MaximumPedestrianEvents}"
+      WatchdogConfiguration__MinimumRecords: "${WatchdogConfiguration__MinimumRecords}"
+      WatchdogConfiguration__MinPhaseTerminations: "${WatchdogConfiguration__MinPhaseTerminations}"
+      WatchdogConfiguration__PercentThreshold: "${WatchdogConfiguration__PercentThreshold}"
+      WatchdogConfiguration__PreviousDayPMPeakEnd: "${WatchdogConfiguration__PreviousDayPMPeakEnd}"
+      WatchdogConfiguration__PreviousDayPMPeakStart: "${WatchdogConfiguration__PreviousDayPMPeakStart}"
+      WatchdogConfiguration__ScanDayEndHour: "${WatchdogConfiguration__ScanDayEndHour}"
+      WatchdogConfiguration__ScanDayStartHour: "${WatchdogConfiguration__ScanDayStartHour}"
+      WatchdogConfiguration__RampMainlineStartHour: "${WatchdogConfiguration__RampMainlineStartHour}"
+      WatchdogConfiguration__RampMainlineEndHour: "${WatchdogConfiguration__RampMainlineEndHour}"
+      WatchdogConfiguration__RampStuckQueueStartHour: "${WatchdogConfiguration__RampStuckQueueStartHour}"
+      WatchdogConfiguration__RampStuckQueueEndHour: "${WatchdogConfiguration__RampStuckQueueEndHour}"
+      WatchdogConfiguration__WeekdayOnly: "${WatchdogConfiguration__WeekdayOnly}"
+      WatchdogConfiguration__DefaultEmailAddress: "${WatchdogConfiguration__DefaultEmailAddress}"
+      WatchdogConfiguration__EmailAllErrors: "${WatchdogConfiguration__EmailAllErrors}"
+      WatchdogConfiguration__Sort: "${WatchdogConfiguration__Sort}"
+    depends_on:
+      database-installer:
+        condition: service_completed_successfully
+    entrypoint: ["dotnet", "WatchDog.dll"]
+
+  eventlogutility:
+    build:
+      context: .
+      dockerfile: EventLogUtility/Dockerfile
+    environment:
+      <<: *default-environment
+
+      DeviceDownloaderConfiguration__DeviceDownloader__BasePath: "${DeviceDownloaderConfiguration__DeviceDownloader__BasePath}"
+      DeviceDownloaderConfiguration__DeviceDownloader__DeleteRemoteFile: "${DeviceDownloaderConfiguration__DeviceDownloader__DeleteRemoteFile}"
+      DeviceDownloaderConfiguration__DeviceDownloader__Ping: "${DeviceDownloaderConfiguration__DeviceDownloader__Ping}"
+
+      EventLogImporterConfiguration__EventLogFileImporter__EarliestAcceptableDate: "${EventLogImporterConfiguration__EventLogFileImporter__EarliestAcceptableDate}"
+      EventLogImporterConfiguration__EventLogFileImporter__DeleteSource: "${EventLogImporterConfiguration__EventLogFileImporter__DeleteSource}"
+
+      EventLogUtility__SiemensDecoder: "${EventLogUtility__SiemensDecoder}"
+
+      DeviceEventLoggingConfiguration__Path: "${DeviceEventLoggingConfiguration__Path}"
+      DeviceEventLoggingConfiguration__BatchSize: "${DeviceEventLoggingConfiguration__BatchSize}"
+      DeviceEventLoggingConfiguration__ParallelProcesses: "${DeviceEventLoggingConfiguration__ParallelProcesses}"
+    depends_on:
+      database-installer:
+        condition: service_completed_successfully
+    entrypoint: ["dotnet", "EventLogUtility.dll"]
+
+
+
+volumes:
+  aspnet_https:
