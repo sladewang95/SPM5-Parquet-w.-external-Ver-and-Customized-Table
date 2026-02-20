@@ -61,6 +61,11 @@ namespace Utah.Udot.Atspm.Data
         /// </summary>
         public virtual DbSet<CompressedEventLogs<PedestrianCounter>> PedestrianCounters { get; set; }
 
+        /// <summary>
+        /// <inheritdoc cref="SignalEvent"/>
+        /// </summary>
+        public virtual DbSet<SignalEvent> SignalEvents { get; set; }
+
         /// <inheritdoc/>
         protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
         {
@@ -95,6 +100,9 @@ namespace Utah.Udot.Atspm.Data
                 builder.Property(e => e.Data)
                 .HasConversion<CompressedListConverter<EventLogModelBase>, AbstractListComparer<EventLogModelBase>>();
             });
+
+            // Apply SignalEvent configuration
+            modelBuilder.ApplyConfiguration(new Configuration.SignalEventConfiguration());
 
             OnModelCreatingPartial(modelBuilder);
         }

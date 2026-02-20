@@ -63,6 +63,21 @@ namespace Utah.Udot.Atspm.Data.Models
         /// </summary>
         public string Notes { get; set; }
 
+        /// <summary>
+        /// Port number for device connection
+        /// </summary>
+        public int PortNum { get; set; }
+
+        /// <summary>
+        /// Communication protocol
+        /// </summary>
+        public string Protocol { get; set; }
+
+        /// <summary>
+        /// File starter identifier
+        /// </summary>
+        public string FileStarter { get; set; }
+
         #region IRelatedLocation
 
         /// <inheritdoc/>

@@ -513,7 +513,7 @@ try {
     Write-Host "     docker-compose -f docker-compose.external-db.yml up --build" -ForegroundColor Gray
     Write-Host ""
     Write-Host "  3. Access ATSPM Web UI:" -ForegroundColor White
-    Write-Host "     https://localhost/" -ForegroundColor Gray
+    Write-Host "     https://localhost:3443/" -ForegroundColor Gray
     Write-Host ""
     Write-Host "  4. Log in with your admin credentials:" -ForegroundColor White
     Write-Host "     Email   : $AtspmAdminEmail" -ForegroundColor Gray

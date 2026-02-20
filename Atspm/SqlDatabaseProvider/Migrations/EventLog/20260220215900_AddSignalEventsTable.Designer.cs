@@ -3,17 +3,20 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Utah.Udot.Atspm.Data;
 
 #nullable disable
 
-namespace Utah.Udot.ATSPM.SqlDatabaseProvider.Migrations.EventLog
+namespace Utah.Udot.SqlDatabaseProvider.Migrations.EventLog
 {
     [DbContext(typeof(EventLogContext))]
-    partial class EventLogContextModelSnapshot : ModelSnapshot
+    [Migration("20260220215900_AddSignalEventsTable")]
+    partial class AddSignalEventsTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

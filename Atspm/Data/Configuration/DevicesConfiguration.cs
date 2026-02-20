@@ -55,6 +55,16 @@ namespace Utah.Udot.Atspm.Data.Configuration
 
             builder.Property(e => e.Notes)
                 .HasMaxLength(512);
+
+            builder.Property(e => e.PortNum)
+                .IsRequired()
+                .HasDefaultValue(0);
+
+            builder.Property(e => e.Protocol)
+                .HasMaxLength(10);
+
+            builder.Property(e => e.FileStarter)
+                .HasMaxLength(50);
         }
     }
 }

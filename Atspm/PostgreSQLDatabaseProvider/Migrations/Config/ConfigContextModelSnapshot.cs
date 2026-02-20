@@ -594,6 +594,11 @@ namespace Utah.Udot.ATSPM.PostgreSQLDatabaseProvider.Migrations
                         .HasColumnType("character varying(16)")
                         .HasDefaultValue("Unknown");
 
+                    b.Property<string>("FileStarter")
+                        .HasMaxLength(50)
+                        .IsUnicode(false)
+                        .HasColumnType("character varying(50)");
+
                     b.Property<string>("Ipaddress")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
@@ -619,6 +624,16 @@ namespace Utah.Udot.ATSPM.PostgreSQLDatabaseProvider.Migrations
                         .HasMaxLength(512)
                         .IsUnicode(false)
                         .HasColumnType("character varying(512)");
+
+                    b.Property<int>("PortNum")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<string>("Protocol")
+                        .HasMaxLength(10)
+                        .IsUnicode(false)
+                        .HasColumnType("character varying(10)");
 
                     b.HasKey("Id");
 
@@ -2726,7 +2741,7 @@ namespace Utah.Udot.ATSPM.PostgreSQLDatabaseProvider.Migrations
                     b.Property<DateTime>("Date")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp")
-                        .HasDefaultValue(new DateTime(2026, 1, 29, 20, 15, 24, 450, DateTimeKind.Local).AddTicks(6007));
+                        .HasDefaultValue(new DateTime(2026, 2, 20, 15, 59, 30, 338, DateTimeKind.Local).AddTicks(1609));
 
                     b.Property<DateTime?>("Modified")
                         .HasColumnType("timestamp");
