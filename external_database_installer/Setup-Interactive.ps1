@@ -417,15 +417,16 @@ try {
     
     # Run DatabaseInstaller
     Write-Host "[*] Creating databases and running migrations..." -ForegroundColor Cyan
-    $DatabaseInstallerPath = Join-Path (Split-Path $ScriptDir -Parent) "Atspm\DatabaseInstaller"
+    $DatabaseInstallerPath = Join-Path (Split-Path $ScriptDir -Parent) "Atspm\DatabaseInstaller\published"
+    $DatabaseInstallerExe = Join-Path $DatabaseInstallerPath "DatabaseInstaller.exe"
     
-    if (-not (Test-Path $DatabaseInstallerPath)) {
-        Write-Error "DatabaseInstaller not found at: $DatabaseInstallerPath"
+    if (-not (Test-Path $DatabaseInstallerExe)) {
+        Write-Error "DatabaseInstaller executable not found at: $DatabaseInstallerExe"
+        Write-Host "Please ensure you have published the DatabaseInstaller on a machine with internet access." -ForegroundColor Yellow
+        Write-Host "Run: dotnet publish -c Release -o published" -ForegroundColor Yellow
         pause
         exit 1
     }
-    
-    Push-Location $DatabaseInstallerPath
     
     # Build connection strings for DatabaseInstaller
     if ($DatabaseType -eq "SqlServer") {
@@ -453,8 +454,6 @@ try {
     Write-Host ""
     
     $InstallerArgs = @(
-        "run",
-        "--",
         "update",
         "--provider", $Provider,
         "--config-connection", $ConfigConn,
@@ -467,11 +466,9 @@ try {
         "--seed-admin", "true"
     )
     
-    # Run dotnet command and display output in real-time
-    & dotnet $InstallerArgs
+    # Run pre-published executable directly (no internet required)
+    & $DatabaseInstallerExe $InstallerArgs
     $exitCode = $LASTEXITCODE
-    
-    Pop-Location
     
     Write-Host ""
     

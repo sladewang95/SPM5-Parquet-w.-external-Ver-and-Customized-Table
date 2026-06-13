@@ -26,6 +26,8 @@
 *.so
 *.so.*
 *.dylib
+*.dll
+!Atspm/Utah.Udot.NetStandardToolkit.dll
 
 # Executables
 *.exe
@@ -53,6 +55,9 @@ dkms.conf
 # Build artifacts
 **/bin/
 **/obj/
+**/published/
+*.runtimeconfig.json
+*.deps.json
 
 # Visual Studio files
 .vs/
@@ -108,6 +113,13 @@ npm-debug.log*
 # Yarn dependencies and lock file (if applicable)
 .yarn/
 yarn.lock
+
+# Environment files (contain database credentials and secrets)
+.env
+**/.env
+
+# Local data exports / scratch files
+CompressedEvents*.csv
 
 # Miscellaneous files
 *.bak
